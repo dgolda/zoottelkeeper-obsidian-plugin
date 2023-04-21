@@ -205,14 +205,37 @@ export default class ZoottelkeeperPlugin extends Plugin {
 		const realFileName = `${path.split('|')[0]}.md`;
 		const fileAbstrPath = this.app.vault.getAbstractFileByPath(realFileName);
 		const embedSubIndexCharacter = this.settings.embedSubIndex && this.isIndexFile(fileAbstrPath) ? '!' : '';
-		
+
+		const wikiLinks = false
+		let link: string;
+		if(wikiLinks) {
+			link = `[[${path}]]`
+		}
+		else {
+			const fileName = path.split("/").pop();
+			let relativePath: string
+			if(isFile) {
+				relativePath = fileName
+			}
+			else {
+				const pathElements = path.split("/");
+				pathElements.pop();
+				const dir = pathElements.pop();
+				relativePath = `${dir}/${fileName}`
+			}
+			const linkRef = encodeURI(relativePath).replace(/%2F/g, '/');
+			const linkName = (fileName.endsWith(".md"))
+							? fileName.replace(/\.md$/,'')
+							: fileName;
+			link = `[${linkName}](${linkRef})\n`
+		}
 		switch (this.settings.indexItemStyle) {
 			case IndexItemStyle.PureLink:
-				return `${this.setEmojiPrefix(isFile)} ${embedSubIndexCharacter}[[${path}]]`;
+				return `${this.setEmojiPrefix(isFile)} ${embedSubIndexCharacter}${link}`;
 			case IndexItemStyle.List:
-				return `- ${this.setEmojiPrefix(isFile)} ${embedSubIndexCharacter}[[${path}]]`;
+				return `- ${this.setEmojiPrefix(isFile)} ${embedSubIndexCharacter}${link}`;
 			case IndexItemStyle.Checkbox:
-				return `- [ ] ${this.setEmojiPrefix(isFile)} ${embedSubIndexCharacter}[[${path}]]`
+				return `- [ ] ${this.setEmojiPrefix(isFile)} ${embedSubIndexCharacter}${link}`
 		};
 	}
 
